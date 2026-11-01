@@ -1,5 +1,5 @@
 import pandas as pd
-df=pd.read_csv('C:/Users/bhuva/idle projects/student_placement_500_analysis.csv')
+df=pd.read_csv('')
 print(f"Shape:{df.shape}\n")
 print(f"DataTypes:\n{df.dtypes}\n")
 print(f"Missing Values:\n{df.isnull().sum()}\n")#for missing values
