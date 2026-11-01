@@ -42,6 +42,7 @@ for s in ['CGPA','Attendance','Backlogs','Internships','Projects','Aptitude_Scor
     df[s]=df[s].clip(lower=lower_bound,upper=upper_bound)'''
 #since the outliers may have the chance to be genuine ,we will not remove the outliers 
 
+#add DATA VISUALISATION CODE HERE
 
 #we get cleaned data ,now encoding   
 df['Placed']=df['Placed'].map({'Yes':1,'No':0})
