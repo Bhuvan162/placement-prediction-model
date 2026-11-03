@@ -1,5 +1,6 @@
 import pandas as pd
-df=pd.read_csv('')
+import matplotlib.pyplot as plt
+df=pd.read_csv('C:\\Users\\sumuk\\OneDrive\\Desktop\\coding\\student_placement_500_analysis.csv')
 print(f"Shape:{df.shape}\n")
 print(f"DataTypes:\n{df.dtypes}\n")
 print(f"Missing Values:\n{df.isnull().sum()}\n")#for missing values
@@ -42,7 +43,16 @@ for s in ['CGPA','Attendance','Backlogs','Internships','Projects','Aptitude_Scor
     df[s]=df[s].clip(lower=lower_bound,upper=upper_bound)'''
 #since the outliers may have the chance to be genuine ,we will not remove the outliers 
 
-#add DATA VISUALISATION CODE HERE #to be added
+#DATA VISUALISATION - scatterplot of CGPA vs Technical Score
+placed=df[df['Placed']=='Yes']
+not_placed=df[df['Placed']=='No']
+plt.scatter(placed['CGPA'],placed['Technical_Score'],color='green',label='Placed')
+plt.scatter(not_placed['CGPA'],not_placed['Technical_Score'],color='red',label='Not Placed')
+plt.xlabel('CGPA')
+plt.ylabel('Technical Score')
+plt.title('CGPA vs Technical Score')
+plt.legend()
+plt.show()
 
 #we get cleaned data ,now encoding   
 df['Placed']=df['Placed'].map({'Yes':1,'No':0})
