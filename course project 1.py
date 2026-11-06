@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-df=pd.read_csv('C:\\Users\\sumuk\\OneDrive\\Desktop\\coding\\student_placement_500_analysis.csv')
+import seaborn as sns
+df=pd.read_csv('C:/Users/bhuva/idle projects/student_placement_500_analysis.csv')
 print(f"Shape:{df.shape}\n")
 print(f"DataTypes:\n{df.dtypes}\n")
 print(f"Missing Values:\n{df.isnull().sum()}\n")#for missing values
@@ -25,7 +26,6 @@ for s in ['CGPA','Attendance','Internships','Technical_Score','Communication_Sco
     
     df[s]=df[s].fillna(df[s].median())
 
-
 #to check the outliers of the data we will use IQR method
 for s in ['CGPA','Attendance','Backlogs','Internships','Projects','Aptitude_Score','Technical_Score','Communication_Score']: 
     Q1=df[s].quantile(0.25)
@@ -36,30 +36,17 @@ for s in ['CGPA','Attendance','Backlogs','Internships','Projects','Aptitude_Scor
     outliers=df[s][(df[s]<lower_bound)|(df[s]>upper_bound)]
     print(f"The number of outliers in {s} is :\n {outliers}",end='\n\n')
 
-
 #for outliers we will cap them in lower and upper bound
 '''for s in ['CGPA','Attendance','Backlogs','Internships','Projects','Aptitude_Score','Technical_Score','Communication_Score']:
 
     df[s]=df[s].clip(lower=lower_bound,upper=upper_bound)'''
-#since the outliers may have the chance to be genuine ,we will not remove the outliers 
-
-#DATA VISUALISATION - scatterplot of CGPA vs Technical Score
-placed=df[df['Placed']=='Yes']
-not_placed=df[df['Placed']=='No']
-plt.scatter(placed['CGPA'],placed['Technical_Score'],color='green',label='Placed')
-plt.scatter(not_placed['CGPA'],not_placed['Technical_Score'],color='red',label='Not Placed')
-plt.xlabel('CGPA')
-plt.ylabel('Technical Score')
-plt.title('CGPA vs Technical Score')
-plt.legend()
-plt.show()
+#since the outliers may have the chance to be genuine ,we will not remove the outliers
 
 #we get cleaned data ,now encoding   
 df['Placed']=df['Placed'].map({'Yes':1,'No':0})
 #df['Department']=df['Department'].map({'CSE':0,'ECE':1,'IT':2,'EEE':3,'AIDS':4,'MECH':5})
 #since doing ordinal encoding may disrupt the correlation so we will first group by the data
 #into sub datas of different departments and then train the model
-
 
 #so to divide the data into subdata
 dk1=df[df['Department']=='CSE']#cse 125 rows
@@ -68,9 +55,6 @@ dk3=df[df['Department']=='EEE']#55 rows
 dk4=df[df['Department']=='IT']#81 rows
 dk5=df[df['Department']=='AIDS']#87 rows
 dk6=df[df['Department']=='MECH']#69 rows
-
-
-
 
 #now to remove uneseccary columns for prediction
 
@@ -84,6 +68,31 @@ dp5=dk5[['CGPA','Attendance','Backlogs','Internships','Projects','Aptitude_Score
 dp6=dk6[['CGPA','Attendance','Backlogs','Internships','Projects','Aptitude_Score','Technical_Score','Communication_Score','Placed']]
 info={'CSE':dp1,'ECE':dp2,'EEE':dp3,'IT':dp4,'AIDS':dp5,'MECH':dp6}
 
+#Data Visualisation
+fig,ax=plt.subplots(2,3,figsize=(60,60))
+
+l=sorted(list(info.keys()))
+i=0
+while i in range(0,2):
+    s=0
+    while s in range (0,3):
+        try:
+            for k in sorted(l):
+                sns.scatterplot(data=info[k],x='CGPA',y='Communication_Score',hue='Placed',alpha=0.6,ax=ax[i,s])
+                ax[i,s].set_title(f'Department:{k}')
+                ax[i,s].set_xlabel('CGPA')
+                ax[i,s].set_ylabel('Communication_Score')
+                l.pop(0)
+                s+=1
+        except IndexError:
+            break
+
+    i+=1
+    continue
+
 #now we will do correlational matrix
 for s in list(info.keys()):
     print(f"Correlation matrix of {s} Department:\n{info[s].corr()}",end='\n\n')
+
+
+plt.show()
