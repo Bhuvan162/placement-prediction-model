@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
-df=pd.read_csv('C:/Users/bhuva/idle projects/student_placement_500_analysis.csv')
+df=pd.read_csv('')
 print(f"Shape:{df.shape}\n")
 print(f"DataTypes:\n{df.dtypes}\n")
 print(f"Missing Values:\n{df.isnull().sum()}\n")#for missing values
