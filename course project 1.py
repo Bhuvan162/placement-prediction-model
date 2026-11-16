@@ -1,6 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+
 df=pd.read_csv('C:/Users/bhuva/idle projects/student_placement_500_analysis.csv')
 print(f"Shape:{df.shape}\n")
 print(f"DataTypes:\n{df.dtypes}\n")
@@ -96,3 +100,112 @@ for s in list(info.keys()):
 
 
 plt.show()
+
+#to train the model
+#as the data is classification type we will use Random Forest and bagging method
+#we will create a model per department 
+
+# List of feature columns in exact order
+features = [
+    'CGPA',
+    'Attendance',
+    'Backlogs',
+    'Internships',
+    'Projects',
+    'Aptitude_Score',
+    'Technical_Score',
+    'Communication_Score',
+]
+
+models = {}
+placed_stats = {}
+
+# 1. Train one Random Forest model per department using your 'info' dictionary
+for dept, data in info.items():
+  X = data[features]
+  y = data['Placed']
+
+  X_train, X_test, y_train, y_test = train_test_split(
+      X, y, test_size=0.2, random_state=42, stratify=y
+  )
+
+  rf = RandomForestClassifier(n_estimators=100, random_state=42)
+  rf.fit(X_train, y_train)
+  models[dept] = rf
+
+  # Print accuracy for each department model
+  acc = accuracy_score(y_test, rf.predict(X_test))
+  print(f'{dept} Model Accuracy: {acc:.2%}')
+
+  # Save mean and std of PLACED students (Placed == 1) for comparison
+  placed_students = data[data['Placed'] == 1][features]
+  placed_stats[dept] = {
+      'mean': placed_students.mean(),
+      'std': placed_students.std().replace(0, 1),  # avoid division by zero
+  }
+
+
+# 2. Interactive Prediction Function
+def predict_student_placement():
+    while True:
+        try:
+              print('\n--- Student Placement Predictor ---')
+              dept = (
+                  input('Enter Department (CSE, ECE, EEE, IT, AIDS, MECH): ').strip().upper()
+              )
+
+              if dept not in models:
+                print('Invalid department! Please choose from CSE, ECE, EEE, IT, AIDS, MECH.')
+                return
+
+              # Collect feature inputs from user
+              student_values = []
+              for feat in features:
+                val = float(input(f'Enter {feat}: '))
+                student_values.append(val)
+
+              # Convert input to DataFrame with matching column names
+              input_df = pd.DataFrame([student_values], columns=features)
+
+              # Predict placement (1 = Yes, 0 = No) and probability
+              model = models[dept]
+              prediction = model.predict(input_df)[0]
+              probability = model.predict_proba(input_df)[0][1]
+
+              # Calculate how far above/below the placed-student average each feature is
+              means = placed_stats[dept]['mean']
+              stds = placed_stats[dept]['std']
+              z_scores = (input_df.iloc[0] - means) / stds
+
+              # For Backlogs, lower is better, so flip the sign
+              z_scores['Backlogs'] = -z_scores['Backlogs']
+
+              print('\n--- Result ---')
+              if prediction == 1:
+                strongest_feat = z_scores.idxmax()
+                student_val = input_df.iloc[0][strongest_feat]
+                avg_val = means[strongest_feat]
+
+                print(f'Prediction: PLACED (Confidence: {probability:.1%})')
+                print(
+                    f'Strong Point: {strongest_feat} (Your score: {student_val} vs Placed'
+                    f' Avg: {avg_val:.2f})'
+                )
+              else:
+                weakest_feat = z_scores.idxmin()
+                student_val = input_df.iloc[0][weakest_feat]
+                avg_val = means[weakest_feat]
+
+                print(f'Prediction: NOT PLACED (Placement Probability: {probability:.1%})')
+                print(
+                    f'Strong Point:{z_scores.idxmax()}\n'
+                    f'Weak Point: {weakest_feat} (Your score: {student_val} vs Placed Avg:'
+                    f' {avg_val:.2f})'
+                )
+        except EOFError:
+            print("**********Thank You*********")
+            break
+
+
+# 3. Run the interactive prompt
+predict_student_placement()
